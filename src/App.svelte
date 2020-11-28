@@ -4,10 +4,21 @@
 	// import Select from './loadyaml.svelte'
 	import yaml from 'js-yaml'
 	import JSONEditor from 'jsoneditor';
+	import FileSaver from 'file-saver';
 	let container;
 	let width = 400;
-	let height = 300;
-  let editor;
+	let height = 320;
+	let editor;
+	let default_setting = {
+		ch1: 1,
+		ch2: 2,
+		ch3: 3,
+		ch4: 4,
+		ch5: 5,
+		ch6: 6,
+		ch7: 7,
+		ch8: 8
+	}
 	// console.log(yaml)
 	// console.log(yaml.safeDump({a:1, b:2, c:3}))
 	var reader;
@@ -27,8 +38,14 @@
 		var txt = event.target.result;
 		console.log(txt);
 		settings = yaml.safeLoad(txt);
+		const schema ={
+			"type": "object",
+			"additionalProperties": { "type": "number",
+				"minimum": -100, "maximum": 100 }
+		} 
 		const options = {
 			mode: 'tree', // 'view' disable edit
+			schema: schema,
 			onChange: function () {
 				console.log('onChange')
 				let updated = editor.get()
@@ -36,8 +53,10 @@
 				// changed = true;
 			}
 		}
+		if (Object.keys(settings).length != 8) settings= default_setting
 		editor = new JSONEditor(container, options)
 		// set json
+		console.log(settings)
 		editor.set(settings)
 	}
   function errorHandler(evt) {
@@ -53,12 +72,9 @@
 		const content = yaml.dump(settings)
 		blob = new Blob([content], { type: 'text/yaml' });
 		// console.log(blob)
-		if (
-      window.navigator && 
-      window.navigator.msSaveOrOpenBlob
-    ) { 
-			console.log('navigator');
-			window.navigator.msSaveOrOpenBlob(blob);
+		if (true) { 
+			console.log('file-saver');
+			FileSaver.saveAs(blob, 'f.yaml');
 		} else {
 			console.log('create link a')
 			let a = document.createElement('a')
